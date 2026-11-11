@@ -7,25 +7,9 @@ permissions:
   contents: read
 
 jobs:
-  build:
-    name: Build ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: windows-latest
-            target: windows
-            artifact: windows-x64
-          - os: ubuntu-latest
-            target: linux
-            artifact: linux-x64
-          - os: macos-14
-            target: macos
-            artifact: macos-arm64
-          - os: ubuntu-latest
-            target: android
-            artifact: android-apk
+  build-windows:
+    name: Build Windows x64
+    runs-on: windows-latest
 
     steps:
       - name: Checkout with private submodule
@@ -36,80 +20,27 @@ jobs:
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: stable
+          flutter-version: 3.24.5
 
-      # ========== Windows ==========
+      - name: Enable Windows desktop
+        run: flutter config --enable-windows-desktop
+
       - name: Build Windows
-        if: matrix.target == 'windows'
         shell: pwsh
         run: |
-          flutter config --enable-windows-desktop
           cd flutter
           flutter build windows --release
 
       - name: Upload Windows
-        if: matrix.target == 'windows'
         uses: actions/upload-artifact@v4
         with:
-          name: rustdesk-${{ matrix.artifact }}
+          name: rustdesk-windows-x64
           path: flutter/build/windows/x64/runner/Release/
-          retention-days: 14
-
-      # ========== Linux ==========
-      - name: Build Linux
-        if: matrix.target == 'linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libgtk-3-dev libxcb-randr0-dev libxdo-dev libxfixes-dev libxcb-shape0-dev libxcb-xfixes0-dev libasound2-dev libpulse-dev cmake
-          flutter config --enable-linux-desktop
-          cd flutter
-          flutter build linux --release
-
-      - name: Upload Linux
-        if: matrix.target == 'linux'
-        uses: actions/upload-artifact@v4
-        with:
-          name: rustdesk-${{ matrix.artifact }}
-          path: flutter/build/linux/x64/release/bundle/
-          retention-days: 14
-
-      # ========== macOS ==========
-      - name: Build macOS
-        if: matrix.target == 'macos'
-        run: |
-          flutter config --enable-macos-desktop
-          cd flutter
-          flutter build macos --release
-
-      - name: Upload macOS
-        if: matrix.target == 'macos'
-        uses: actions/upload-artifact@v4
-        with:
-          name: rustdesk-${{ matrix.artifact }}
-          path: flutter/build/macos/Build/Products/Release/
-          retention-days: 14
-
-      # ========== Android ==========
-      - name: Setup Java
-        if: matrix.target == 'android'
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 17
-
-      - name: Build Android APK
-        if: matrix.target == 'android'
-        run: |
-          flutter build apk --release
-
-      - name: Upload Android APK
-        if: matrix.target == 'android'
-        uses: actions/upload-artifact@v4
-        with:
-          name: rustdesk-${{ matrix.artifact }}
-          path: build/app/outputs/flutter-apk/app-release.apk
           retention-days: 14
