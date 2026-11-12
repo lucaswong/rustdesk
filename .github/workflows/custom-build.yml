@@ -29,6 +29,13 @@ jobs:
           channel: stable
           flutter-version: 3.24.5
 
+      - name: Install flutter_rust_bridge_codegen
+        run: cargo install flutter_rust_bridge_codegen --version 1.80.1 --features uuid
+
+      - name: Generate bridge
+        run: |
+          flutter_rust_bridge_codegen --rust-input src/flutter_ffi.rs --dart-output flutter/lib/generated_bridge.dart --c-output flutter/windows/runner/bridge_generated.h
+
       - name: Enable Windows desktop
         run: flutter config --enable-windows-desktop
 
