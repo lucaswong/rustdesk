@@ -9,7 +9,7 @@ permissions:
 jobs:
   build-windows:
     name: Build Windows x64
-    runs-on: windows-latest
+    runs-on: windows-2022
 
     steps:
       - name: Checkout with private submodule
@@ -34,8 +34,6 @@ jobs:
 
       - name: Build Windows
         shell: pwsh
-        env:
-          CMAKE_GENERATOR: Visual Studio 17 2022
         run: |
           cd flutter
           flutter build windows --release
