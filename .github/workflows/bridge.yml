@@ -37,7 +37,22 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
-          submodules: recursive
+          submodules: false
+
+      - name: Checkout private hbb_common
+        shell: bash
+        run: |
+          git config --global url."https://${{ secrets.SUBMODULE_TOKEN }}@github.com/".insteadOf "https://github.com/"
+          git submodule update --init --recursive || true
+          if [ -d "libs/hbb_common" ]; then
+            cd libs/hbb_common
+            echo "=== hbb_common commit ==="
+            git log -1 --oneline || true
+            echo "=== Server config ==="
+            grep -n "RENDEZVOUS_SERVERS" src/config.rs || echo "Not found"
+          else
+            echo "hbb_common directory not found"
+          fi
 
       - name: Install prerequisites
         run: |
