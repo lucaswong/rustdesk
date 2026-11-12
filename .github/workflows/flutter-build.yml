@@ -147,6 +147,7 @@ jobs:
   generate-bridge:
     needs: [validate-update-metadata-keys]
     uses: ./.github/workflows/bridge.yml
+    secrets: inherit
 
   build-RustDeskTempTopMostWindow:
     needs: [validate-update-metadata-keys]
